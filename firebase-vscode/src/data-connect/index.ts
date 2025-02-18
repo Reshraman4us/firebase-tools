@@ -155,6 +155,7 @@ export function registerFdc(
     authService,
     dataConnectToolkit,
     emulatorController,
+    context,
   );
 
   const configs = dataConnectConfigs.value?.tryReadValue;
@@ -266,7 +267,6 @@ export function registerFdc(
       configureSdkCodeLensProvider,
     ),
     geminiAssist,
-    refreshCommand,
     {
       dispose: () => {
         client.stop();

@@ -240,3 +240,67 @@ interface ImpersonationUnauthenticated {
 export type Impersonation = ImpersonationAuthenticated | ImpersonationUnauthenticated;
 
 /** End Dataplane Client Types */
+
+/** Start Gemini client types */
+
+export interface CallCloudAiCompanionRequest {
+  servicePath: string;
+  naturalLanguageQuery: string;
+  ideContext: {[key: string]: string}; // version, ide info, etc.
+}
+
+export interface CloudAICompanionInput {
+  preamble?: string;
+  messages: CloudAICompanionMessage[];
+}
+
+export interface CloudAICompanionMessage {
+  content: string;
+  author: string;
+}
+
+export interface ExperienceContext {
+  experience?: string;
+  agent?: string;
+  task?: string;
+}
+
+export interface InputDataContext {}
+
+export interface ClientContext {}
+
+export interface BackendResourcesContext {}
+
+export interface CloudAICompanionRequest {
+  instance: string;
+  messageId?: string;
+  topic?: string;
+  input: CloudAICompanionInput;
+
+  // product context -- required
+  experienceContext: ExperienceContext;
+
+  // Additional user content not captured in the `input` field above
+  inputDataContext?: InputDataContext;
+
+  // Client context (e.g. IDE name, version, etc)
+  clientContext?: ClientContext;
+
+  // The GCP resources that the code generation process needs to reference
+  backendResourcesContext?: BackendResourcesContext;
+}
+
+export interface CloudAICompanionResponse {
+  data: string;
+  errors: any[];
+}
+
+export interface CloudAICompanionResponseError {
+  errors: any[];
+}
+
+export interface FdcRequestInfo {
+  serviceId: string;
+  fdcServiceName: string;
+  requiresQuery: boolean;
+}

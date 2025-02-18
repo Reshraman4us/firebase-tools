@@ -1,4 +1,5 @@
 import fetch, { Response } from "node-fetch";
+import { ExtensionContext } from "vscode";
 import {
   ExecutionResult,
   IntrospectionQuery,
@@ -10,7 +11,7 @@ import { AuthService } from "../auth/service";
 import { UserMockKind } from "../../common/messaging/protocol";
 import { firstWhereDefined } from "../utils/signal";
 import { EmulatorsController } from "../core/emulators";
-import { dataConnectConfigs } from "../data-connect/config";
+import { dataConnectConfigs, VSCODE_ENV_VARS } from "../data-connect/config";
 
 import { firebaseRC } from "../core/config";
 import {
@@ -18,7 +19,14 @@ import {
   executeGraphQL,
   DATACONNECT_API_VERSION,
 } from "../../../src/dataconnect/dataplaneClient";
+
 import {
+  cloudAICompationClient,
+  callCloudAICompanion,
+} from "../../../src/dataconnect/cloudAiCompanionClient";
+
+import {
+  CallCloudAiCompanionRequest,
   ExecuteGraphqlRequest,
   ExecuteGraphqlResponse,
   ExecuteGraphqlResponseError,
@@ -28,6 +36,7 @@ import { Client, ClientResponse } from "../../../src/apiv2";
 import { InstanceType } from "./code-lens-provider";
 import { pluginLogger } from "../logger-wrapper";
 import { DataConnectToolkit } from "./toolkit";
+import { getAnalyticsContext } from "../analytics";
 
 /**
  * DataConnect Emulator service
@@ -37,15 +46,15 @@ export class DataConnectService {
     private authService: AuthService,
     private dataConnectToolkit: DataConnectToolkit,
     private emulatorsController: EmulatorsController,
+    private context: ExtensionContext,
   ) {}
 
-  async servicePath(
-    path: string
-  ): Promise<string | undefined> {
+  async servicePath(path: string): Promise<string | undefined> {
     const dataConnectConfigsValue = await firstWhereDefined(dataConnectConfigs);
     // TODO: avoid calling this here and in getApiServicePathByPath
     const serviceId =
-      dataConnectConfigsValue?.tryReadValue?.findEnclosingServiceForPath(path)?.value.serviceId;
+      dataConnectConfigsValue?.tryReadValue?.findEnclosingServiceForPath(path)
+        ?.value.serviceId;
     const projectId = firebaseRC.value?.tryReadValue?.projects?.default;
 
     if (serviceId === undefined || projectId === undefined) {
@@ -257,6 +266,23 @@ export class DataConnectService {
   docsLink() {
     return this.dataConnectToolkit.getGeneratedDocsURL();
   }
+
+  // Start cloud section
+
+  async generateOperation(path: string, naturalLanguageQuery: string) {
+    const client = cloudAICompationClient();
+    const servicePath = await this.servicePath(path);
+    if (!servicePath) {
+      return;
+    }
+    const request: CallCloudAiCompanionRequest = {
+      servicePath,
+      naturalLanguageQuery,
+      ideContext: getAnalyticsContext(this.context),
+    };
+    const resp = await callCloudAICompanion(client, request);
+    return resp.body;
+  }
 }
 
 function parseVariableString(variables: string): Record<string, any> {
@@ -265,9 +291,9 @@ function parseVariableString(variables: string): Record<string, any> {
   }
   try {
     return JSON.parse(variables);
-  } catch(e: any) {
+  } catch (e: any) {
     throw new Error(
-      "Unable to parse variables as JSON. Double check that that there are no unmatched braces or quotes, or unqouted keys in the variables pane."
+      "Unable to parse variables as JSON. Double check that that there are no unmatched braces or quotes, or unqouted keys in the variables pane.",
     );
   }
 }
