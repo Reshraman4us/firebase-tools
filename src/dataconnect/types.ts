@@ -272,7 +272,6 @@ export interface ClientContext {}
 export interface BackendResourcesContext {}
 
 export interface CloudAICompanionRequest {
-  instance: string;
   messageId?: string;
   topic?: string;
   input: CloudAICompanionInput;
@@ -291,12 +290,12 @@ export interface CloudAICompanionRequest {
 }
 
 export interface CloudAICompanionResponse {
-  data: string;
-  errors: any[];
-}
-
-export interface CloudAICompanionResponseError {
-  errors: any[];
+  output: {
+    messages: {
+      content: string;
+      author: string;
+    }[];
+  };
 }
 
 export interface FdcRequestInfo {

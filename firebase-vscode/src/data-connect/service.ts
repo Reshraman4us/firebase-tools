@@ -28,7 +28,6 @@ import {
 import {
   CallCloudAiCompanionRequest,
   CloudAICompanionResponse,
-  CloudAICompanionResponseError,
   ExecuteGraphqlRequest,
   ExecuteGraphqlResponse,
   ExecuteGraphqlResponseError,
@@ -274,7 +273,7 @@ export class DataConnectService {
   async generateOperation(
     path: string,
     naturalLanguageQuery: string,
-  ): Promise<CloudAICompanionResponse | CloudAICompanionResponseError | undefined> {
+  ): Promise<CloudAICompanionResponse | undefined> {
     const client = cloudAICompationClient();
     const servicePath = await this.servicePath(path);
     if (!servicePath) {

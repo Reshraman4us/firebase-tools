@@ -1,7 +1,6 @@
 import { ClientResponse, Client } from "../apiv2";
 import { cloudAiCompanionOrigin } from "../api";
 import {
-  CloudAICompanionResponseError,
   CloudAICompanionResponse,
   CloudAICompanionRequest,
   CloudAICompanionInput,
@@ -12,7 +11,7 @@ import {
 const CLOUD_AI_COMPANION_VERSION = "v1";
 const CLIENT_CONTEXT_NAME_IDENTIFIER = "firebase_vscode";
 const FIREBASE_CHAT_REQUEST_CONTEXT_TYPE_NAME =
-  "google.cloud.cloudaicompanion.v1main.FirebaseChatRequestContext";
+  "type.googleapis.com/google.cloud.cloudaicompanion.v1main.FirebaseChatRequestContext";
 const FDC_EXPERIENCE_CONTEXT = "/appeco/firebase/firebase-chat/free";
 const USER_AUTHOR = "USER";
 
@@ -27,15 +26,17 @@ export function cloudAICompationClient(): Client {
 export async function callCloudAICompanion(
   client: Client,
   vscodeRequest: CallCloudAiCompanionRequest,
-): Promise<ClientResponse<CloudAICompanionResponse | CloudAICompanionResponseError>> {
+): Promise<ClientResponse<CloudAICompanionResponse>> {
   console.log("HAROLD before build request");
   const request = buildRequest(vscodeRequest);
-    console.log("HAROLD REQUEST in cli IS:", request);
+    const { serviceId, projectId } = getServiceParts(vscodeRequest.servicePath);
 
+  console.log("HAROLD REQUEST in cli IS:", request);
+  const instance = toChatResourceName(projectId);
   const res = await client.post<
     CloudAICompanionRequest,
-    CloudAICompanionResponse | CloudAICompanionResponseError
-  >(`${request.instance}:completeTask`, request);
+    CloudAICompanionResponse
+  >(`${instance}:completeTask`, request);
   console.log("HAROLD:  RESULTS: ", res);
   return res;
 }
@@ -57,19 +58,19 @@ function buildRequest({
 
   const clientContext: ClientContext = {
     name: CLIENT_CONTEXT_NAME_IDENTIFIER,
-    // TODO: determine if we should pass vscode version; // version: ideContext.ver, 
+    // TODO: determine if we should pass vscode version; // version: ideContext.ver,
     additionalContext: {
-      fdcInfo: {
+
+      "@type": FIREBASE_CHAT_REQUEST_CONTEXT_TYPE_NAME,
+       fdcInfo: {
         serviceId,
-        serviceName: servicePath,
+        fdcServiceName: servicePath,
         requiresQuery: true,
       },
-      FIREBASE_CHAT_REQUEST_CONTEXT_TYPE_NAME,
     },
   };
 
   return {
-    instance: toChatResourceName(projectId),
     input,
     clientContext,
     experienceContext: {
