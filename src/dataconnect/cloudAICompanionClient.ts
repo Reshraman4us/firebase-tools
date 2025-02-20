@@ -28,12 +28,15 @@ export async function callCloudAICompanion(
   client: Client,
   vscodeRequest: CallCloudAiCompanionRequest,
 ): Promise<ClientResponse<CloudAICompanionResponse | CloudAICompanionResponseError>> {
+  console.log("HAROLD before build request");
   const request = buildRequest(vscodeRequest);
+    console.log("HAROLD REQUEST in cli IS:", request);
 
   const res = await client.post<
     CloudAICompanionRequest,
     CloudAICompanionResponse | CloudAICompanionResponseError
-  >("", request);
+  >(`${request.instance}:completeTask`, request);
+  console.log("HAROLD:  RESULTS: ", res);
   return res;
 }
 

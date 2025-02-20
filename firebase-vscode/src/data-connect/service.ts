@@ -280,13 +280,17 @@ export class DataConnectService {
     if (!servicePath) {
       return undefined;
     }
+
+    console.log("HAROLD about to call api:", naturalLanguageQuery)
     const request: CallCloudAiCompanionRequest = {
       servicePath,
       naturalLanguageQuery,
       ideContext: getAnalyticsContext(this.context),
     };
-    const resp = await callCloudAICompanion(client, request);
 
+    console.log("HAROLD REQUEST IS:", request);
+    const resp = await callCloudAICompanion(client, request);
+console.log("HAROLD response is:", resp);
     return resp.body as CloudAICompanionResponse;
   }
 }
