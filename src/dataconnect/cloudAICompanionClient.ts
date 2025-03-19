@@ -12,7 +12,7 @@ const CLOUD_AI_COMPANION_VERSION = "v1";
 const CLIENT_CONTEXT_NAME_IDENTIFIER = "firebase_vscode";
 const FIREBASE_CHAT_REQUEST_CONTEXT_TYPE_NAME =
   "type.googleapis.com/google.cloud.cloudaicompanion.v1main.FirebaseChatRequestContext";
-const FDC_EXPERIENCE_CONTEXT = "/appeco/firebase/firebase-chat/free";
+const FDC_EXPERIENCE_CONTEXT = "/appeco/firebase/fdc-schema-generator";
 const USER_AUTHOR = "USER";
 
 export function cloudAICompationClient(): Client {

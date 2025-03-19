@@ -38,6 +38,7 @@ import { InstanceType } from "./code-lens-provider";
 import { pluginLogger } from "../logger-wrapper";
 import { DataConnectToolkit } from "./toolkit";
 import { getAnalyticsContext } from "../analytics";
+import { ChatContext } from "./gemini-tool-types";
 
 /**
  * DataConnect Emulator service
@@ -280,7 +281,7 @@ export class DataConnectService {
       return undefined;
     }
 
-    console.log("HAROLD about to call api:", naturalLanguageQuery)
+    console.log("HAROLD about to call api:", naturalLanguageQuery);
     const request: CallCloudAiCompanionRequest = {
       servicePath,
       naturalLanguageQuery,
@@ -289,7 +290,7 @@ export class DataConnectService {
 
     console.log("HAROLD REQUEST IS:", request);
     const resp = await callCloudAICompanion(client, request);
-console.log("HAROLD response is:", resp);
+    console.log("HAROLD response is:", resp);
     return resp.body as CloudAICompanionResponse;
   }
 }
