@@ -12,8 +12,10 @@ const CLOUD_AI_COMPANION_VERSION = "v1";
 const CLIENT_CONTEXT_NAME_IDENTIFIER = "firebase_vscode";
 const FIREBASE_CHAT_REQUEST_CONTEXT_TYPE_NAME =
   "type.googleapis.com/google.cloud.cloudaicompanion.v1main.FirebaseChatRequestContext";
-const FDC_EXPERIENCE_CONTEXT = "/appeco/firebase/fdc-schema-generator";
+const FDC_SCHEMA_EXPERIENCE_CONTEXT = "/appeco/firebase/fdc-schema-generator";
+const FDC_OPERATION_EXPERIENCE_CONTEXT = "/appeco/firebase/fdc-query-generator";
 const USER_AUTHOR = "USER";
+type GENERATION_TYPE = "schema" | "operation";
 
 export function cloudAICompationClient(): Client {
   return new Client({
@@ -26,29 +28,30 @@ export function cloudAICompationClient(): Client {
 export async function callCloudAICompanion(
   client: Client,
   vscodeRequest: CallCloudAiCompanionRequest,
+  type: GENERATION_TYPE,
 ): Promise<ClientResponse<CloudAICompanionResponse>> {
   console.log("HAROLD before build request");
-  const request = buildRequest(vscodeRequest);
-    const { serviceId, projectId } = getServiceParts(vscodeRequest.servicePath);
+  const request = buildRequest(vscodeRequest, type);
+  const { serviceId, projectId } = getServiceParts(vscodeRequest.servicePath);
 
   console.log("HAROLD REQUEST in cli IS:", request);
   const instance = toChatResourceName(projectId);
-  const res = await client.post<
-    CloudAICompanionRequest,
-    CloudAICompanionResponse
-  >(`${instance}:completeTask`, request);
+  const res = await client.post<CloudAICompanionRequest, CloudAICompanionResponse>(
+    `${instance}:completeTask`,
+    request,
+  );
   console.log("HAROLD:  RESULTS: ", res);
   return res;
 }
 
-function buildRequest({
-  servicePath,
-  naturalLanguageQuery,
-  ideContext,
-}: CallCloudAiCompanionRequest): CloudAICompanionRequest {
+function buildRequest(
+  { servicePath, naturalLanguageQuery, ideContext, chatHistory }: CallCloudAiCompanionRequest,
+  type: GENERATION_TYPE,
+): CloudAICompanionRequest {
   const { serviceId, projectId } = getServiceParts(servicePath);
   const input: CloudAICompanionInput = {
     messages: [
+      ...chatHistory,
       {
         author: USER_AUTHOR,
         content: naturalLanguageQuery,
@@ -60,9 +63,8 @@ function buildRequest({
     name: CLIENT_CONTEXT_NAME_IDENTIFIER,
     // TODO: determine if we should pass vscode version; // version: ideContext.ver,
     additionalContext: {
-
       "@type": FIREBASE_CHAT_REQUEST_CONTEXT_TYPE_NAME,
-       fdcInfo: {
+      fdcInfo: {
         serviceId,
         fdcServiceName: servicePath,
         requiresQuery: true,
@@ -74,7 +76,8 @@ function buildRequest({
     input,
     clientContext,
     experienceContext: {
-      experience: FDC_EXPERIENCE_CONTEXT,
+      experience:
+        type === "schema" ? FDC_SCHEMA_EXPERIENCE_CONTEXT : FDC_OPERATION_EXPERIENCE_CONTEXT,
     },
   };
 }

@@ -246,7 +246,8 @@ export type Impersonation = ImpersonationAuthenticated | ImpersonationUnauthenti
 export interface CallCloudAiCompanionRequest {
   servicePath: string;
   naturalLanguageQuery: string;
-  ideContext: {[key: string]: string}; // version, ide info, etc.
+  ideContext: { [key: string]: string }; // version, ide info, etc.
+  chatHistory: ChatMessage[];
 }
 
 export interface CloudAICompanionInput {
@@ -291,10 +292,7 @@ export interface CloudAICompanionRequest {
 
 export interface CloudAICompanionResponse {
   output: {
-    messages: {
-      content: string;
-      author: string;
-    }[];
+    messages: ChatMessage[];
   };
 }
 
@@ -302,4 +300,9 @@ export interface FdcRequestInfo {
   serviceId: string;
   fdcServiceName: string;
   requiresQuery: boolean;
+}
+
+export interface ChatMessage {
+  content: string;
+  author: string;
 }

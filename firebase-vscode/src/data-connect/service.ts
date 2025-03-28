@@ -27,6 +27,7 @@ import {
 
 import {
   CallCloudAiCompanionRequest,
+  ChatMessage,
   CloudAICompanionResponse,
   ExecuteGraphqlRequest,
   ExecuteGraphqlResponse,
@@ -274,9 +275,15 @@ export class DataConnectService {
   async generateOperation(
     path: string,
     naturalLanguageQuery: string,
+    type: "schema" | "operation",
+    chatHistory: ChatMessage[],
   ): Promise<CloudAICompanionResponse | undefined> {
+    console.log("Harold creating client");
     const client = cloudAICompationClient();
     const servicePath = await this.servicePath(path);
+
+    console.log("Harold creating client");
+
     if (!servicePath) {
       return undefined;
     }
@@ -286,10 +293,11 @@ export class DataConnectService {
       servicePath,
       naturalLanguageQuery,
       ideContext: getAnalyticsContext(this.context),
+      chatHistory
     };
 
     console.log("HAROLD REQUEST IS:", request);
-    const resp = await callCloudAICompanion(client, request);
+    const resp = await callCloudAICompanion(client, request, type);
     console.log("HAROLD response is:", resp);
     return resp.body as CloudAICompanionResponse;
   }
